@@ -6,3 +6,5 @@ __pycache__/
 .vscode/
 .idea/
 logs/*.log
+.agents/
+.remote_agent_lab_inspect/
