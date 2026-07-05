@@ -28,14 +28,17 @@ agent-lab/
 
 ### 01 Basic Tool Agent
 
-`01_basic_tool_agent` 是一个面向深度学习实验场景的中文工具调用 Agent，基于 DashScope/Qwen OpenAI-compatible API 实现。
+`01_basic_tool_agent` 是一个面向地震数据去混叠实验的中文工具调用 Agent，基于 DashScope/Qwen OpenAI-compatible API 实现。它从基础工具调用示例扩展为一个可复现的 RSyn_Net 去混叠实验助手。
 
 它支持：
 
 - 查询 NVIDIA GPU 状态。
 - 分析训练日志中的常见错误。
-- 生成训练命令但不自动执行训练。
-- 对删除文件、执行 Shell、缺少 GPU 编号等高风险场景保持保守。
+- 查询 RSyn_Net 可用模型、结构特色和适用场景。
+- 查询去混叠数据文件说明和有监督输入/标签配对。
+- 基于内置轻量 demo 数据复现 1 轮训练、验证和测试。
+- 生成 RSyn_Net 训练/测试命令，并在显式确认后安全执行主入口。
+- 对删除文件、执行任意 Shell、缺少 GPU 编号等高风险场景保持保守。
 
 详细配置和使用方式见 [01_basic_tool_agent/README.md](01_basic_tool_agent/README.md)。
 
