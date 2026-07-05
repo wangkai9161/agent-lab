@@ -17,14 +17,8 @@ Experiments with LLM agents, tool use, RAG, and workflow automation.
 ```text
 agent-lab/
 ├── 01_basic_tool_agent/   # 已完成：中文深度学习实验工具调用 Agent
-├── 02_rag_agent/          # 预留：中文 RAG Agent
-├── 03_experiment_agent/   # 预留：后续实验 Agent
-├── agents/                # 通用 Agent 实现占位
-├── docs/                  # 设计说明和实验笔记
-├── examples/              # 小型示例和演示
-├── prompts/               # 可复用 prompt 模板
-├── tools/                 # 通用工具封装
-├── tests/                 # 通用测试和评估用例
+├── 02_rag_agent/          # 预留：中文 RAG Agent，后续实现
+├── 03_experiment_agent/   # 预留：后续实验 Agent，后续实现
 ├── .env.example
 ├── requirements.txt
 └── README.md
@@ -49,9 +43,6 @@ agent-lab/
 
 - `02_rag_agent`：实现文档加载、文本切分、向量检索和基于上下文的中文问答。
 - `03_experiment_agent`：用于继续探索多工具协作、实验流程自动化或更复杂的 Agent 工作流。
-- Add reusable prompt templates.
-- Add tool-calling examples.
-- Add evaluation notes and test cases.
 
 ## Safety
 
