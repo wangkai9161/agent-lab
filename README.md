@@ -16,7 +16,7 @@ Experiments with LLM agents, tool use, RAG, and workflow automation.
 
 ```text
 agent-lab/
-├── 01_basic_tool_agent/   # 已完成：中文深度学习实验工具调用 Agent
+├── 01_basic_tool_agent/   # 已完成：中文深度学习去混叠助手 Agent
 ├── 02_rag_agent/          # 预留：中文 RAG Agent，后续实现
 ├── 03_experiment_agent/   # 预留：后续实验 Agent，后续实现
 ├── .env.example
