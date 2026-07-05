@@ -8,3 +8,12 @@ __pycache__/
 logs/*.log
 .agents/
 .remote_agent_lab_inspect/
+*.pth
+*.pt
+*.ckpt
+01_basic_tool_agent/RSyn_Net/data/*.mat
+!01_basic_tool_agent/RSyn_Net/data/demo_*.mat
+01_basic_tool_agent/RSyn_Net/data_preview/*.png
+!01_basic_tool_agent/RSyn_Net/data_preview/demo_*.png
+01_basic_tool_agent/RSyn_Net/runs/
+01_basic_tool_agent/RSyn_Net/outputs/

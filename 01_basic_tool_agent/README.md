@@ -6,7 +6,8 @@
 
 - 查询 NVIDIA GPU 型号、显存占用、利用率和温度。
 - 读取并分析训练日志，识别常见问题，例如 CUDA out of memory、NaN、Traceback、缺少模块、路径不存在等。
-- 根据模型、GPU 编号、训练轮数、batch size、学习率等参数生成训练命令。
+- 查询 RSyn_Net 可用模型和模型结构特色。
+- 生成或执行 RSyn_Net 的训练/测试主入口命令。
 - 对高风险请求保持保守：不会删除文件，不会执行训练命令，不会在用户未提供 GPU 编号时自行猜测。
 
 ## 目录结构
@@ -18,7 +19,13 @@
   tools/
     gpu_tool.py          # nvidia-smi 查询
     log_tool.py          # 训练日志读取与规则分析
+    rsyn_tool.py         # RSyn_Net 模型查询和主入口封装
     train_tool.py        # 训练命令生成
+  RSyn_Net/
+    main/
+      train_main.py      # RSyn_Net 训练主入口
+      test_main.py       # RSyn_Net 测试主入口
+    models/              # RSyn_Net 模型实现
   tests/
     test_tools.py        # 本地工具单元测试
     test_agent_selection.py
@@ -38,6 +45,23 @@ cd D:\codex_data\chinese_agent_project\01_basic_tool_agent
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+```
+
+如果要运行 RSyn_Net 训练/测试主入口，还需要深度学习环境。当前验证使用：
+
+```powershell
+D:\Anaconda\envs\seismic310\python.exe
+```
+
+RSyn_Net 主要依赖：
+
+```text
+torch
+scipy
+numpy<2
+matplotlib
+einops
+timm
 ```
 
 复制 `.env.example` 为 `.env`，然后填入真实配置：
@@ -119,6 +143,14 @@ python tests/test_qwen_api.py
 python main.py
 ```
 
+如果在 Linux/SSH 终端里看到中文乱码，先确认终端使用 UTF-8，并可临时设置：
+
+```bash
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+python main.py
+```
+
 ## 使用教程
 
 ### 1. 启动交互式 Agent
@@ -159,41 +191,119 @@ Agent 会调用 `nvidia-smi` 查询 GPU 信息。如果当前机器没有 NVIDIA
 - 可能原因：根据日志推测的原因。
 - 处理建议：下一步可以尝试的排查或修复动作。
 
-### 4. 生成训练命令
-
-示例：
-
-```text
-用 GPU 1 训练 UNet 100 轮，batch size 设为 2
-使用 GPU 3 训练 dncnn，训练 200 轮，batch size 为 1，学习率为 0.0002
-帮我生成 UNetWaveletatten 的训练命令，GPU 用 2，训练 50 轮
-```
-
-Agent 只会生成命令，不会自动执行训练。生成结果类似：
-
-```powershell
-python Net_make/model_test2/train_test_compare_combined.py --mode train --compare_models dncnn --gpu_list 3 --epochs 200 --batch_size 1 --lr 0.0002 --save_dir save_models --result_dir results
-```
-
-如果用户没有明确提供 GPU 编号，例如：
-
-```text
-帮我生成 dncnn 的训练命令
-```
-
-Agent 应该追问 GPU 编号，而不是默认使用 GPU 0。
-
-### 5. 直接调用本地工具
+### 4. 直接调用本地工具
 
 如果只是想测试工具函数，不经过大模型，也可以直接运行：
 
 ```powershell
 python tools/gpu_tool.py
 python tools/log_tool.py logs/sample_train.log
-python tools/train_tool.py
 ```
 
-其中 `tools/train_tool.py` 会通过命令行交互收集训练参数，然后输出训练命令。
+
+### 5. 查询 RSyn_Net 模型
+
+示例：
+
+```text
+RSyn_Net 有哪些可用模型？
+介绍一下 residual_dncnn 的特点
+哪个模型适合小 batch？
+haar_wavelet_subband_attention_unet 有什么特色？
+```
+
+Agent 会调用 `get_rsyn_model_overview`，返回模型列表和结构特点。
+
+当前模型名统一使用新命名：
+
+| Model name | 特色 |
+| --- | --- |
+| `attention_residual_cnn` | 残差 CNN 块结合块级自注意力，适合扩大局部感受野。 |
+| `residual_dncnn` | DnCNN 风格残差输出 `x - F(x)`，适合作为轻量基线。 |
+| `groupnorm_cnn` | GroupNorm 版直接输出 CNN，适合小 batch。 |
+| `groupnorm_residual_dncnn` | GroupNorm + 残差 DnCNN，兼顾小 batch 稳定性和残差重建。 |
+| `hybrid_branch_cnn` | 普通卷积混合多分支 CNN，用于多分支特征组合实验。 |
+| `ql_hybrid_branch_cnn` | QLConv 混合多分支 CNN，强调乘加非线性交互。 |
+| `ql_residual_block_cnn` | QLConv 残差块 CNN，适合测试乘加卷积残差块。 |
+| `quadratic_residual_dncnn` | 带 `x**2` 分支的残差 DnCNN 变体。 |
+| `ql_direct_dncnn` | QLConv 直接输出 DnCNN 变体。 |
+| `swinir_restoration` | Swin Transformer 恢复网络，表达能力强，计算开销较高。 |
+| `standard_unet` | 经典 U-Net，强基线。 |
+| `compact_unet` | 32 基础通道的紧凑 U-Net，适合快速实验。 |
+| `haar_wavelet_unet` | Haar 小波 U-Net，显式建模高低频子带。 |
+| `haar_wavelet_unet_gn` | GroupNorm 版 Haar 小波 U-Net，适合小 batch。 |
+| `haar_wavelet_subband_attention_unet` | 小波子带注意力 + ECA，突出不同子带自适应加权。 |
+| `residual_attention_unet` | Residual/Linear Attention U-Net，含权重标准化卷积。 |
+| `mask_guided_unet` | Mask-guided U-Net，适合缺失掩码或采样掩码重建。 |
+
+### 6. 查询 RSyn_Net 数据配对
+
+示例问法：
+```text
+RSyn_Net 有哪些数据？输入和标签怎么配？
+合成数据去混叠用哪组数据？
+海洋数据去混叠怎么设置 train_data_name 和 label_data_name？
+```
+
+Agent 会调用 `get_rsyn_data_overview`，返回数据文件说明、有监督去混叠配对和训练参数映射。
+
+推荐配对：
+
+| 任务 | 输入 | 标签 |
+| --- | --- | --- |
+| `demo_synthetic_light` | `demo_synthetic_blending_light.mat` | `demo_synthetic_clean.mat` |
+| `synthetic_light` | `synthetic_blending_light.mat` | `synthetic_clean.mat` |
+| `synthetic_heavy` | `synthetic_blending_heavy.mat` | `synthetic_clean.mat` |
+| `marine` | `marine_blending.mat` | `marine_clean.mat` |
+
+这些配对对应训练主函数中的参数：
+
+```text
+--train_data_name / --valid_data_name / --test_data_name  输入数据
+--label_data_name                                          干净标签
+--img_data_name                                            测试输入数据
+```
+
+### 7. 调用 RSyn_Net 主入口
+
+RSyn_Net 主入口位于：
+
+```text
+RSyn_Net/main/train_main.py
+RSyn_Net/main/test_main.py
+```
+
+示例问法：
+
+```text
+生成 residual_dncnn 的 RSyn_Net 训练命令，GPU 用 0，训练 1 轮，batch size 2
+生成 RSyn_Net 测试命令，run_dir 是 runs/train/example，GPU 用 0
+```
+
+默认情况下，Agent 只生成命令，不执行：
+
+```powershell
+python main/train_main.py --model residual_dncnn --gpu_list 0 --epochs 1 --batch_size 2
+```
+
+GitHub 轻量 demo 可直接使用内置裁剪数据运行：
+
+```powershell
+python main/train_main.py --model compact_unet --gpu_list 0 --epochs 1 --batch_size 2 --output_root outputs --run_name demo_compact_unet
+```
+
+如果确实要通过工具执行，必须显式确认执行：
+
+```text
+执行 RSyn_Net 训练主入口，模型 residual_dncnn，GPU 0，训练 1 轮，并确认 RUN_RSyn_Net
+```
+
+工具内部仍只允许 `train_main.py` 和 `test_main.py` 两个入口，不支持任意 Shell 命令。
+
+GPU 说明：`--gpu_list 3` 会先设置 `CUDA_VISIBLE_DEVICES=3`。脚本内部显示的
+`cuda:0` 表示“当前可见设备中的第 0 块”，实际对应物理 GPU 3。默认训练使用单卡
+`--gpu_list 0`，不会自动启用多卡；如需多卡训练，需要显式传入类似
+`--gpu_list 0,1 --allow_dataparallel True`。
 
 ## 测试
 
@@ -212,7 +322,7 @@ python tests/test_agent_selection.py
 
 ## 注意事项
 
-- `generate_train_command` 只生成命令，不执行训练。
+- `run_rsyn_main` 默认只生成 RSyn_Net 命令，不执行训练。
 - 如果用户没有明确提供 GPU 编号，Agent 应追问，而不是默认使用 GPU 0。
 - `get_gpu_status` 依赖本机或服务器安装 `nvidia-smi`。
 - 日志分析是基于规则的辅助判断，不替代对完整训练代码和数据的排查。
