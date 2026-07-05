@@ -19,7 +19,8 @@
 - 查询 RSyn_Net 可用模型、结构特色和适用场景。
 - 查询去混叠数据文件说明和有监督输入/标签配对。
 - 生成 RSyn_Net 训练/测试命令，并在确认后执行主入口。
-- 使用轻量 demo 数据复现 1 轮训练、验证和测试。
+- 使用轻量 demo 数据复现 n 轮训练、验证和测试。
+- 默认60s超时中断，长期训练需对话延长超时中断限制
 - 对高风险请求保持保守：不删除文件，不执行任意 Shell，不在用户未提供 GPU 编号时自行猜测。
 
 ## 目录结构
@@ -335,10 +336,3 @@ pytest tests/test_tools.py
 python tests/test_qwen_api.py
 python tests/test_agent_selection.py
 ```
-
-## 注意事项
-
-- `run_rsyn_main` 默认只生成 RSyn_Net 命令，不执行训练。
-- 如果用户没有明确提供 GPU 编号，Agent 应追问，而不是默认使用 GPU 0。
-- `get_gpu_status` 依赖本机或服务器安装 `nvidia-smi`。
-- 日志分析是基于规则的辅助判断，不替代对完整训练代码和数据的排查。
