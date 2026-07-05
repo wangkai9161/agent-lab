@@ -47,8 +47,3 @@ agent-lab/
 - `02_rag_agent`：实现文档加载、文本切分、向量检索和基于上下文的中文问答。
 - `03_experiment_agent`：用于继续探索多工具协作、实验流程自动化或更复杂的 Agent 工作流。
 
-## Safety
-
-Do not commit API keys, tokens, passwords, private documents, or private datasets.
-
-不要提交真实 API Key、访问令牌、密码、私有数据集或私人文档。每个需要 API 的实验都应提供 `.env.example`，真实 `.env` 只保留在本地。
