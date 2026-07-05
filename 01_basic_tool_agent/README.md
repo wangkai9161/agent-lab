@@ -1,4 +1,4 @@
-# 中文深度学习实验工具 Agent
+# 中文深度学习去混叠 Agent
 
 `01_basic_tool_agent` 是一个基于 DashScope/Qwen OpenAI-compatible API 的中文工具调用 Agent。它面向深度学习去混叠处理，重点进行训练显卡选取，训练日志分析和训练命令生成。
 
