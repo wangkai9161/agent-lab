@@ -1,14 +1,26 @@
 # 中文深度学习去混叠 Agent
 
-`01_basic_tool_agent` 是一个基于 DashScope/Qwen OpenAI-compatible API 的中文工具调用 Agent。它面向深度学习去混叠处理，重点进行训练显卡选取，训练日志分析和训练命令生成。
+`01_basic_tool_agent` 是一个面向地震数据去混叠实验的中文工具调用 Agent。项目基于 DashScope/Qwen OpenAI-compatible API 构建，将大模型对话能力和本地深度学习实验工具连接起来，用自然语言完成 GPU 查询、训练日志分析、RSyn_Net 模型/数据查询，以及训练/测试命令的安全生成与执行。
 
-## 功能
+这个实验从基础工具 Agent 扩展到一个可复现的去混叠实验助手：仓库内置了从真实合成数据裁剪出的轻量 demo 数据，下载后可以直接跑通 `compact_unet` 的 1 轮训练和测试流程；完整的大规模 `.mat` 数据则通过 `.gitignore` 排除，避免 GitHub 仓库过大。
+
+## 项目亮点
+
+- **中文工具调用 Agent**：支持自然语言触发本地工具，完成 GPU 查询、日志分析、模型查询和训练入口调用。
+- **接入 RSyn_Net 去混叠实验**：封装 `train_main.py` / `test_main.py`，支持 17 个去混叠模型结构。
+- **轻量可复现 demo**：内置 `demo_synthetic_blending_light.mat -> demo_synthetic_clean.mat`，可直接验证训练链路。
+- **安全执行策略**：默认只生成命令；真正启动训练必须显式确认 `RUN_RSyn_Net`。
+- **工程化整理**：大数据、checkpoint、训练输出默认忽略，只保留代码、demo 数据和说明文档。
+
+## 功能清单
 
 - 查询 NVIDIA GPU 型号、显存占用、利用率和温度。
 - 读取并分析训练日志，识别常见问题，例如 CUDA out of memory、NaN、Traceback、缺少模块、路径不存在等。
-- 查询 RSyn_Net 多类深度学习去混叠可用模型和模型结构特色。
-- 生成或执行 RSyn_Net 的训练/测试主入口命令。
-- 对高风险请求保持保守：不会删除文件，不会执行训练命令，不会在用户未提供 GPU 编号时自行猜测。
+- 查询 RSyn_Net 可用模型、结构特色和适用场景。
+- 查询去混叠数据文件说明和有监督输入/标签配对。
+- 生成 RSyn_Net 训练/测试命令，并在确认后执行主入口。
+- 使用轻量 demo 数据复现 1 轮训练、验证和测试。
+- 对高风险请求保持保守：不删除文件，不执行任意 Shell，不在用户未提供 GPU 编号时自行猜测。
 
 ## 目录结构
 
@@ -20,12 +32,16 @@
     gpu_tool.py          # nvidia-smi 查询
     log_tool.py          # 训练日志读取与规则分析
     rsyn_tool.py         # RSyn_Net 模型查询和主入口封装
-    train_tool.py        # 训练命令生成
   RSyn_Net/
+    data/
+      demo_*.mat         # GitHub 轻量复现数据
+    data_preview/
+      demo_*.png         # demo 数据预览图
     main/
       train_main.py      # RSyn_Net 训练主入口
       test_main.py       # RSyn_Net 测试主入口
     models/              # RSyn_Net 模型实现
+    utils/               # 训练、验证和调度工具
   tests/
     test_tools.py        # 本地工具单元测试
     test_agent_selection.py
@@ -41,7 +57,7 @@
 建议使用 Python 3.10 或更高版本。
 
 ```powershell
-cd "文件路径"
+cd D:\codex_data\chinese_agent_project\01_basic_tool_agent
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -81,6 +97,8 @@ DASHSCOPE_MODEL=qwen-plus
 ### 1. 获取 DashScope API Key
 
 本项目通过 DashScope 的 OpenAI-compatible 接口调用 Qwen 模型。你需要先准备一个可用的 DashScope API Key。
+
+拿到 Key 后，不要直接写进代码文件，也不要提交到 Git 仓库。项目已经把 `.env` 加入 `.gitignore`，推荐只把真实 Key 放在本地 `.env` 文件里。
 
 ### 2. 创建本地配置文件
 
