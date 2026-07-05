@@ -1,12 +1,12 @@
 # 中文深度学习实验工具 Agent
 
-`01_basic_tool_agent` 是一个基于 DashScope/Qwen OpenAI-compatible API 的中文工具调用 Agent。它面向深度学习实验场景，重点处理 GPU 状态查询、训练日志分析和训练命令生成。
+`01_basic_tool_agent` 是一个基于 DashScope/Qwen OpenAI-compatible API 的中文工具调用 Agent。它面向深度学习去混叠处理，重点进行训练显卡选取，训练日志分析和训练命令生成。
 
 ## 功能
 
 - 查询 NVIDIA GPU 型号、显存占用、利用率和温度。
 - 读取并分析训练日志，识别常见问题，例如 CUDA out of memory、NaN、Traceback、缺少模块、路径不存在等。
-- 查询 RSyn_Net 可用模型和模型结构特色。
+- 查询 RSyn_Net 多类深度学习去混叠可用模型和模型结构特色。
 - 生成或执行 RSyn_Net 的训练/测试主入口命令。
 - 对高风险请求保持保守：不会删除文件，不会执行训练命令，不会在用户未提供 GPU 编号时自行猜测。
 
