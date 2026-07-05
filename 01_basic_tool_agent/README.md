@@ -41,7 +41,7 @@
 建议使用 Python 3.10 或更高版本。
 
 ```powershell
-cd D:\codex_data\chinese_agent_project\01_basic_tool_agent
+cd "文件路径"
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -81,8 +81,6 @@ DASHSCOPE_MODEL=qwen-plus
 ### 1. 获取 DashScope API Key
 
 本项目通过 DashScope 的 OpenAI-compatible 接口调用 Qwen 模型。你需要先准备一个可用的 DashScope API Key。
-
-拿到 Key 后，不要直接写进代码文件，也不要提交到 Git 仓库。项目已经把 `.env` 加入 `.gitignore`，推荐只把真实 Key 放在本地 `.env` 文件里。
 
 ### 2. 创建本地配置文件
 
