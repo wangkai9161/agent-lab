@@ -1,0 +1,6 @@
+Epoch 1/200 loss=0.8342
+Epoch 2/200 loss=0.7120
+Traceback (most recent call last):
+  File "train.py", line 88, in <module>
+    loss.backward()
+RuntimeError: CUDA out of memory. Tried to allocate 512.00 MiB.
