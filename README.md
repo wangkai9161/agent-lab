@@ -12,18 +12,19 @@ agent-lab/
 
 | 项目 | 方向 | 状态 | 亮点 |
 | --- | --- | --- | --- |
-| `01_basic_tool_agent` | Tool Agent | 已完成 | GPU 查询、日志分析、训练命令生成、函数调用、参数约束 |
+| `01_basic_tool_agent` | Tool Agent | 已完成 | GPU 查询、日志分析、RSyn_Net 模型/数据查询、训练/测试命令生成 |
 | `02_rag_agent` | RAG Agent | 已完成 | 文档加载、中文切分、混合检索、来源引用、无依据拒答、CLI 与 FastAPI |
 
 ## 01 Basic Tool Agent
 
-面向深度学习实验场景的中文工具调用 Agent。
+面向地震数据去混叠实验场景的中文工具调用 Agent，围绕 RSyn_Net demo 实验组织。
 
 核心能力：
 
 - 查询 NVIDIA GPU 状态。
 - 分析训练日志中的 traceback、OOM、nan、路径错误等问题。
-- 根据模型名、GPU 编号、epoch、batch size、学习率等参数生成训练命令。
+- 查询 RSyn_Net 可用模型、结构特色和 demo 数据说明。
+- 根据模型名、GPU 编号、epoch、batch size 等参数生成训练/测试命令。
 - 使用 OpenAI-compatible / Qwen function calling 完成工具路由。
 - 对缺失参数和不安全请求做约束，避免默认猜测 GPU 或执行危险命令。
 

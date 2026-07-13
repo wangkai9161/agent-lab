@@ -7,7 +7,11 @@ from openai import OpenAI
 
 from tools.gpu_tool import get_gpu_status
 from tools.log_tool import analyze_log_file
-from tools.train_tool import TrainConfig, generate_train_command
+from tools.rsyn_tool import (
+    get_rsyn_data_overview,
+    get_rsyn_model_overview,
+    run_rsyn_main,
+)
 
 
 load_dotenv()
@@ -25,6 +29,150 @@ TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {},
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_rsyn_model_overview",
+            "description": (
+                "查询 RSyn_Net 当前可用模型列表和模型结构特色。"
+                "用户询问 RSyn_Net 有哪些模型、模型效果特点、"
+                "模型适用场景或某个模型介绍时使用。"
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "model_name": {
+                        "type": "string",
+                        "description": (
+                            "可选。指定某个 RSyn_Net 新模型名，"
+                            "例如 residual_dncnn 或 haar_wavelet_subband_attention_unet。"
+                        ),
+                    },
+                },
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_rsyn_data_overview",
+            "description": (
+                "查询 RSyn_Net 数据文件说明和有监督去混叠任务配对。"
+                "用户询问有哪些数据、输入和标签怎么配、合成数据或海洋数据"
+                "应该如何训练时使用。"
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_type": {
+                        "type": "string",
+                        "enum": ["synthetic", "marine"],
+                        "description": (
+                            "可选。按任务类型过滤数据配对：synthetic 表示合成数据，"
+                            "marine 表示海洋数据。不传则返回全部。"
+                        ),
+                    },
+                },
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_rsyn_main",
+            "description": (
+                "生成或执行 RSyn_Net/main 中的 train_main.py 或 test_main.py。"
+                "默认只生成命令，不执行。只有用户明确要求运行，"
+                "且参数中 execute=true、confirm_execute='RUN_RSyn_Net' 时才会执行。"
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["train", "test"],
+                        "description": "运行 train_main.py 或 test_main.py。",
+                    },
+                    "model_name": {
+                        "type": "string",
+                        "description": (
+                            "RSyn_Net 新模型名，例如 residual_dncnn、"
+                            "standard_unet、haar_wavelet_subband_attention_unet。"
+                        ),
+                    },
+                    "gpu_list": {
+                        "type": "string",
+                        "description": (
+                            "用户明确指定的 GPU 列表，例如 0 或 0,1。"
+                            "用户没有提供 GPU 时不得自行猜测。"
+                        ),
+                    },
+                    "python_executable": {
+                        "type": "string",
+                        "description": (
+                            "Python 解释器，默认 python。可使用 python.exe 路径。"
+                        ),
+                        "default": "python",
+                    },
+                    "execute": {
+                        "type": "boolean",
+                        "description": (
+                            "是否真正执行。默认 false，只生成命令。"
+                        ),
+                        "default": False,
+                    },
+                    "confirm_execute": {
+                        "type": "string",
+                        "description": (
+                            "执行确认字段。真正执行时必须等于 RUN_RSyn_Net。"
+                        ),
+                    },
+                    "timeout_seconds": {
+                        "type": "integer",
+                        "description": "执行超时时间，默认 60 秒。",
+                        "default": 60,
+                    },
+                    "data_dir": {"type": "string"},
+                    "train_data_name": {"type": "string"},
+                    "valid_data_name": {"type": "string"},
+                    "test_data_name": {"type": "string"},
+                    "img_data_name": {"type": "string"},
+                    "label_data_name": {"type": "string"},
+                    "split_mode": {
+                        "type": "string",
+                        "enum": ["percent", "index"],
+                    },
+                    "train_ratio": {"type": "number"},
+                    "valid_ratio": {"type": "number"},
+                    "test_ratio": {"type": "number"},
+                    "train_big": {"type": "integer"},
+                    "train_end": {"type": "integer"},
+                    "vild_big": {"type": "integer"},
+                    "vild_end": {"type": "integer"},
+                    "test_big": {"type": "integer"},
+                    "test_end": {"type": "integer"},
+                    "epochs": {"type": "integer"},
+                    "batch_size": {"type": "integer"},
+                    "use_patch": {"type": "boolean"},
+                    "patch_parts": {"type": "integer"},
+                    "lr": {"type": "number"},
+                    "output_root": {"type": "string"},
+                    "run_name": {"type": "string"},
+                    "run_test": {"type": "boolean"},
+                    "checkpoint": {"type": "string"},
+                    "run_dir": {"type": "string"},
+                    "result_dir": {"type": "string"},
+                    "is_resultsave": {"type": "boolean"},
+                    "is_show": {"type": "boolean"},
+                    "is_savefig": {"type": "boolean"},
+                },
+                "required": ["action"],
                 "additionalProperties": False,
             },
         },
@@ -57,126 +205,8 @@ TOOLS = [
             },
         },
     },
-    {
-        "type": "function",
-        "function": {
-            "name": "generate_train_command",
-            "description": (
-                "根据训练脚本、模型名称、GPU 编号、训练轮数、"
-                "batch size 和学习率生成训练命令。"
-                "该工具只生成命令，不会执行训练。"
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "script_path": {
-                        "type": "string",
-                        "description": "训练脚本路径。",
-                        "default": (
-                            "Net_make/model_test2/"
-                            "train_test_compare_combined.py"
-                        ),
-                    },
-                    "model_name": {
-                        "type": "string",
-                        "description": "要训练的模型名称。",
-                        "enum": [
-                            "UNet",
-                            "UNetWaveletatten",
-                            "dncnn",
-                        ],
-                    },
-                    "gpu_id": {
-                        "type": "integer",
-                        "description": (
-                            "用户明确指定的 GPU 编号，例如 0、1、2、3。"
-                            "如果用户没有提供 GPU 编号，禁止自行猜测或使用默认值，"
-                            "应缺省该参数并向用户追问。"
-                        ),
-                    },
-                    "epochs": {
-                        "type": "integer",
-                        "description": "训练轮数，默认 200。",
-                        "default": 200,
-                    },
-                    "batch_size": {
-                        "type": "integer",
-                        "description": "批大小，默认 1。",
-                        "default": 1,
-                    },
-                    "learning_rate": {
-                        "type": "number",
-                        "description": "学习率，默认 0.0002。",
-                        "default": 0.0002,
-                    },
-                    "save_dir": {
-                        "type": "string",
-                        "description": "模型保存目录。",
-                        "default": "save_models",
-                    },
-                    "result_dir": {
-                        "type": "string",
-                        "description": "结果保存目录。",
-                        "default": "results",
-                    },
-                },
-                "required": [
-                    "model_name",
-                ],
-                "additionalProperties": False,
-            },
-        },
-    },
+
 ]
-
-
-def execute_generate_train_command(
-    arguments: Dict[str, Any],
-) -> str:
-    """
-    将模型生成的工具参数转换为 TrainConfig，
-    然后调用训练命令生成函数。
-    """
-    required_fields = ["model_name", "gpu_id"]
-    missing_fields = [
-        field
-        for field in required_fields
-        if field not in arguments
-    ]
-
-    if missing_fields:
-        missing_text = "、".join(missing_fields)
-        return (
-            f"无法生成训练命令，缺少必要参数：{missing_text}。"
-            "请向用户询问缺失参数，不得自行设置默认值。"
-        )
-
-    config = TrainConfig(
-        script_path=arguments.get(
-            "script_path",
-            (
-                "Net_make/model_test2/"
-                "train_test_compare_combined.py"
-            ),
-        ),
-        model_name=arguments["model_name"],
-        gpu_id=int(arguments["gpu_id"]),
-        epochs=int(arguments.get("epochs", 200)),
-        batch_size=int(arguments.get("batch_size", 1)),
-        learning_rate=float(
-            arguments.get("learning_rate", 0.0002)
-        ),
-        save_dir=arguments.get(
-            "save_dir",
-            "save_models",
-        ),
-        result_dir=arguments.get(
-            "result_dir",
-            "results",
-        ),
-    )
-
-    return generate_train_command(config)
 
 
 TOOL_FUNCTIONS: Dict[str, Callable[..., str]] = {
@@ -191,10 +221,18 @@ TOOL_FUNCTIONS: Dict[str, Callable[..., str]] = {
             ),
         )
     ),
-    "generate_train_command": (
-        lambda **kwargs: execute_generate_train_command(
-            kwargs
+    "get_rsyn_model_overview": (
+        lambda **kwargs: get_rsyn_model_overview(
+            model_name=kwargs.get("model_name")
         )
+    ),
+    "get_rsyn_data_overview": (
+        lambda **kwargs: get_rsyn_data_overview(
+            task_type=kwargs.get("task_type")
+        )
+    ),
+    "run_rsyn_main": (
+        lambda **kwargs: run_rsyn_main(**kwargs)
     ),
 }
 
@@ -247,7 +285,8 @@ class ChineseToolAgent:
                 "role": "system",
                 "content": (
                     "你是一个中文深度学习实验助手。"
-                    "当用户请求查询 GPU、分析日志或生成训练命令时，"
+                    "当用户请求查询 GPU、分析日志、查询 RSyn_Net 模型、"
+                    "生成训练命令或调用 RSyn_Net 主入口时，"
                     "必须调用对应工具，禁止自行编造工具执行结果。"
 
                     "回答必须以工具返回内容为主要依据。"
@@ -270,7 +309,15 @@ class ChineseToolAgent:
                     "用户没有明确提供 GPU 编号时，禁止默认使用 GPU 0，"
                     "不得猜测任何 GPU 编号，必须向用户追问。"
 
+                    "如果用户说训练一次、跑一次、训练一轮或跑一轮，"
+                    "应把 epochs 设置为 1。"
+
                     "用户要求执行训练时，只能生成命令并明确说明未执行。"
+                    "如果用户明确要求运行 RSyn_Net 主入口，"
+                    "只能使用 run_rsyn_main 工具，不得执行任意 Shell。"
+                    "run_rsyn_main 默认只生成命令；真正执行前必须有工具级确认。"
+                    "如果 run_rsyn_main 返回执行超时，必须说明这是超时保护触发，"
+                    "不得断言训练仍在后台继续或已经成功启动。"
 
                     "对于删除文件、执行任意 Shell 命令、修改系统配置等请求，"
                     "当前没有安全工具支持，必须拒绝执行。"

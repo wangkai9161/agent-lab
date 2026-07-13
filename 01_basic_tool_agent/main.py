@@ -1,7 +1,18 @@
+import sys
+
 from agent.tool_agent import ChineseToolAgent
 
 
+def configure_stdio() -> None:
+    """Prefer UTF-8 output for Chinese text in terminals and redirected logs."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+
+
 def main() -> None:
+    configure_stdio()
+
     print("=" * 60)
     print("中文深度学习实验 Agent")
     print("输入 exit、quit 或 退出即可结束")
