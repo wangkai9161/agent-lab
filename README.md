@@ -113,7 +113,7 @@ Summary: 3/3 passed
 
 ## Configuration
 
-两个项目都使用 `.env` 读取本地 API 配置。真实 `.env` 已被 `.gitignore` 忽略，不应提交到仓库。
+两个项目都使用 `.env` 读取本地 API 配置。真实 `.env` 已被 `.gitignore` 忽略
 
 DashScope / Qwen 示例：
 
