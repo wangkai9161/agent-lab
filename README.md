@@ -129,23 +129,3 @@ DASHSCOPE_MODEL=qwen-plus
 RAG_LLM_PROVIDER=template  # 离线模板模式
 RAG_LLM_PROVIDER=qwen      # Qwen API 模式
 ```
-
-## Interview Talking Points
-
-面试时可以按这条主线讲：
-
-1. **为什么先做 Tool Agent**：很多实验任务不是知识问答，而是需要准确调用工具、传参和处理错误。
-2. **为什么再做 RAG Agent**：实验资料、日志、README、笔记需要检索和引用，不能只靠模型记忆。
-3. **如何防幻觉**：工具结果优先、检索证据优先、无依据拒答、来源引用。
-4. **如何验证**：`01_basic_tool_agent` 有工具单元测试；`02_rag_agent` 有检索测试和小型评测集。
-5. **下一步扩展**：把两个项目合并成 RAG + Tool Agent，让 Agent 先检索资料，再调用 GPU/日志/训练工具。
-
-## Repository Status
-
-```text
-agent-lab/
-  01_basic_tool_agent/   # completed
-  02_rag_agent/          # completed
-```
-
-仓库只展示已完成项目，避免未完成占位内容影响面试观感。
