@@ -2,8 +2,6 @@
 
 面向 **Agent / RAG / LLM 应用工程** 的项目作品集。仓库目前只保留两个已经完成、可运行、可测试的项目，用来展示从 **工具调用 Agent** 到 **可追溯 RAG Agent** 的递进能力。
 
-## TL;DR
-
 | 项目 | 类型 | 一句话说明 | 主要能力 |
 | --- | --- | --- | --- |
 | [`01_basic_tool_agent`](01_basic_tool_agent/) | Tool Agent | 面向地震数据去混叠实验的中文工具调用 Agent | Function calling、GPU 查询、日志分析、RSyn_Net 实验工具、安全执行约束 |
