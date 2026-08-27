@@ -11,24 +11,6 @@
 
 推荐先看：[`INTERVIEW_GUIDE.md`](INTERVIEW_GUIDE.md)
 
-## Why This Repo
-
-这个仓库不是零散 demo，而是围绕 Agent 求职能力设计的两个递进项目：
-
-```text
-01_basic_tool_agent
-  Agent 能正确选择工具、约束参数、处理实验操作类任务。
-
-02_rag_agent
-  Agent 能检索本地知识、引用证据、拒绝无依据问题，并通过 API 服务化。
-```
-
-它重点展示：
-
-- **Agent 工具调用**：让模型通过 function calling 调用本地工具，而不是直接编造结果。
-- **实验场景落地**：围绕 GPU、训练日志、模型训练命令、实验资料问答这些真实工作流组织。
-- **可靠性设计**：缺少关键参数时追问；无知识库证据时拒答；回答附来源和相似度。
-- **工程化交付**：CLI、FastAPI、单元测试、评测脚本、`.env.example`、`.gitignore` 都已整理。
 
 ## Project 01: Basic Tool Agent
 
