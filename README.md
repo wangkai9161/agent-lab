@@ -7,8 +7,6 @@
 | [`01_basic_tool_agent`](01_basic_tool_agent/) | Tool Agent | 面向地震数据去混叠实验的中文工具调用 Agent | Function calling、GPU 查询、日志分析、RSyn_Net 实验工具、安全执行约束 |
 | [`02_rag_agent`](02_rag_agent/) | RAG Agent | 面向中文实验资料的可追溯 RAG Agent | 文档加载、中文切分、混合检索、来源引用、无依据拒答、CLI + FastAPI |
 
-推荐先看：[`INTERVIEW_GUIDE.md`](INTERVIEW_GUIDE.md)
-
 
 ## Project 01: Basic Tool Agent
 
